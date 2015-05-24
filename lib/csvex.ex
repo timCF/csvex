@@ -24,8 +24,18 @@ defmodule Csvex do
   def encode(lst, opts \\ %{})
   def encode([], _), do: ""
   def encode([first|_] = lst, opts) when is_list(lst) do
-  	required_keys = Map.keys(first)
-	case Enum.filter(lst, &(not(required_keys == Map.keys(&1)))) do
+  	required_keys = case Map.get(opts, :keys) do
+						nil -> 
+							Map.keys(first)
+						keys when is_list(keys) ->
+							fields = Map.keys(first)
+							true = Enum.all?(keys, &(Enum.member?(fields, &1)))
+							keys
+  					end
+	case Enum.filter(lst, fn(el) -> 
+							these_keys = Map.keys(el)
+							not(required_keys |> Enum.all?(&(Enum.member?(these_keys, &1)))) 
+						  end) do
 		[] ->	Enum.reduce([:separator, :str_separator], opts, 
 	  			fn(k, opts) ->
 					case Map.get(opts, k) do
