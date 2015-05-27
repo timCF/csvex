@@ -1,5 +1,5 @@
 %{"conform": {:hex, :conform, "0.13.0"},
-  "csv": {:git, "git://github.com/beatrichartz/csv.git", "36b048ef4103ab5be0e39669cd627f34cd5543d1", []},
+  "csv": {:git, "git://github.com/beatrichartz/csv.git", "36b048ef4103ab5be0e39669cd627f34cd5543d1", [tag: "36b048ef4103ab5be0e39669cd627f34cd5543d1"]},
   "exactor": {:git, "git://github.com/sasa1977/exactor.git", "0467f8100bc735405d597dbf94996195eb31e0b6", [tag: "0467f8100bc735405d597dbf94996195eb31e0b6"]},
   "exrm": {:git, "git://github.com/bitwalker/exrm.git", "2b9988998ad59ffba567b86db536114bb6f3e92d", []},
   "extask": {:git, "git://github.com/timCF/extask.git", "691cc1a515750bead8b81ed6c13cddbcf115d754", []},
