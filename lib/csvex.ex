@@ -1,6 +1,6 @@
 defmodule Csvex do
   use Application
-  use Silverb
+  use Silverb, [{"@default_encoder_opts", %{separator: ";", str_separator: "\n", header: true}}]
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
@@ -18,48 +18,43 @@ defmodule Csvex do
     Supervisor.start_link(children, opts)
   end
 
-  defp default_opt(:separator), do: ";"
-  defp default_opt(:str_separator), do: "\n"
-  
+  #
+  # priv
+  #
+  defp get_req_keys(fields, opts) do
+    case Map.get(opts, :keys) do
+      nil -> fields
+      keys when is_list(keys) -> true = Enum.all?(keys, &(Enum.member?(fields, &1))); keys
+    end
+  end
+
+  defp list_is_uniform(lst, required_keys) do
+    Enum.all?(lst, 
+      fn(el) ->
+        these_keys = Map.keys(el)
+        Enum.all?(required_keys, &(Enum.member?(these_keys, &1)))
+      end)
+  end
+
+  defp encode_proc(opts = %{separator: sep, header: true}, required_keys, lst), do: [encode_row(required_keys, sep)] |> encode_values(lst, required_keys, opts)
+  defp encode_proc(opts = %{header: false}, required_keys, lst), do: encode_values([], lst, required_keys, opts)
+
+  defp encode_values(reslst, [], _, %{str_separator: str_sep}), do: (Enum.reverse(reslst) |> Enum.join(str_sep))<>str_sep
+  defp encode_values(reslst, [el|rest], required_keys, opts = %{separator: sep}), do: [Stream.map(required_keys, &(Map.get(el, &1))) |> encode_row(sep) | reslst] |> encode_values(rest, required_keys, opts)
+
+  defp encode_row(row, sep), do: Stream.map(row, &(CSV.Encode.encode(&1, separator: sep))) |> Enum.join(sep)
+
+  #
+  # public
+  #
   def encode(lst, opts \\ %{})
   def encode([], _), do: ""
   def encode([first|_] = lst, opts) when is_list(lst) do
-  	required_keys = case Map.get(opts, :keys) do
-						nil -> 
-							Map.keys(first)
-						keys when is_list(keys) ->
-							fields = Map.keys(first)
-							true = Enum.all?(keys, &(Enum.member?(fields, &1)))
-							keys
-  					end
-	case Enum.filter(lst, fn(el) -> 
-							these_keys = Map.keys(el)
-							not(required_keys |> Enum.all?(&(Enum.member?(these_keys, &1)))) 
-						  end) do
-		[] ->	Enum.reduce([:separator, :str_separator], opts, 
-	  			fn(k, opts) ->
-					case Map.get(opts, k) do
-						nil -> Map.put(opts, k, default_opt(k))
-						bin when is_binary(bin) -> opts
-					end
-	  			end) 
-				|> encode_proc(required_keys, lst)
-		err -> 	raise "#{__MODULE__} not uniform map(s) #{inspect err}"
-	end
+    required_keys = Map.keys(first) |>  get_req_keys(opts)
+    case list_is_uniform(lst, required_keys) do
+      false -> raise "#{__MODULE__} got not uniform map(s) #{inspect lst}"
+      true -> Map.merge(@default_encoder_opts, opts) |> encode_proc(required_keys, lst)
+    end
   end
-
-  defp encode_proc(opts = %{separator: sep}, required_keys, lst) do 
-	[Stream.map(required_keys, &(CSV.Encode.encode(&1, separator: sep))) |> Enum.join(sep)]
-	|> encode_values(lst, required_keys, opts)
-  end
-
-
-  defp encode_values(reslst, [], _, %{str_separator: str_sep}), do: (Enum.reverse(reslst) |> Enum.join(str_sep))<>str_sep
-  defp encode_values(reslst, [el|rest], required_keys, opts = %{separator: sep}) do
-  	[Stream.map(required_keys, &(Map.get(el, &1) |> CSV.Encode.encode(separator: sep))) |> Enum.join(sep) |reslst]
-  	|> encode_values(rest, required_keys, opts)
-  end
-
-
 
 end
