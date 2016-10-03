@@ -29,11 +29,10 @@ defmodule Csvex do
   end
 
   defp list_is_uniform(lst, required_keys) do
-    Enum.all?(lst, 
-      fn(el) ->
-        these_keys = Map.keys(el)
-        Enum.all?(required_keys, &(Enum.member?(these_keys, &1)))
-      end)
+  	Enum.all?(lst,
+  		fn(el) ->
+  			Enum.all?(required_keys, &(Map.has_key?(el, &1)))
+  		end)
   end
 
   defp encode_proc(opts = %{separator: sep, header: true}, required_keys, lst), do: [encode_row(required_keys, sep)] |> encode_values(lst, required_keys, opts)
