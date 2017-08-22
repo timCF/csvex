@@ -1,6 +1,6 @@
 defmodule Csvex do
   use Application
-  use Silverb, [{"@default_encoder_opts", %{separator: ";", str_separator: "\n", header: true}}]
+  @default_encoder_opts %{separator: ";", str_separator: "\n", header: true}
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications

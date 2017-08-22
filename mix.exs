@@ -12,7 +12,7 @@ defmodule Csvex.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :csv, :silverb],
+    [applications: [:logger, :csv],
      mod: {Csvex, []}]
   end
 
@@ -28,7 +28,6 @@ defmodule Csvex.Mixfile do
   defp deps do
     [
     	{:csv, github: "beatrichartz/csv", tag: "36b048ef4103ab5be0e39669cd627f34cd5543d1", override: true},
-    	{:silverb, github: "timCF/silverb"}
     ]
   end
 end
